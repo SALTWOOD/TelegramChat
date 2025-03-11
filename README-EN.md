@@ -49,6 +49,8 @@ One of the most interesting features of this plugin is that you can extend it by
 ```Python
 from mcdreforged.api.types import PluginServerInterface
 from typing import Callable, List
+from telegram import Update
+from telegram.ext import ContextTypes
 import re
 
 reply: Callable
@@ -60,7 +62,7 @@ PLUGIN_METADATA = {
     'author': 'NONE',
     'link': 'https://github.com',
     'dependencies': {
-        'telegram_chat': '>=1.0.0'
+        'telegram_chat': '>=2.0.0'
     }
 }
 
@@ -72,11 +74,12 @@ def on_load(server: PluginServerInterface, old):
 
     sqc.commands.add_command(re.compile(r'/your-command (.*)'), [str], handler)
 
-def handler(server: PluginServerInterface, event, command: List[str],
-            event_type):
+async def handler(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
+                  event_type: MessageType):
     message = command[0]
-    reply(
+    await reply(
         event,
+        context,
         f"You provided the parameter: \"{message}\""
     )
 ```

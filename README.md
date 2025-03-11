@@ -49,6 +49,8 @@
 ```Python
 from mcdreforged.api.types import PluginServerInterface
 from typing import Callable, List
+from telegram import Update
+from telegram.ext import ContextTypes
 import re
 
 reply: Callable
@@ -60,7 +62,7 @@ PLUGIN_METADATA = {
     'author': 'NONE',
     'link': 'https://github.com',
     'dependencies': {
-        'salty_telegram': '>=1.0.0'
+        'salty_telegram': '>=2.0.0'
     }
 }
 
@@ -72,11 +74,12 @@ def on_load(server: PluginServerInterface, old):
 
     sqc.commands.add_command(re.compile(r'/你的命令 (.*)'), [str], handler)
 
-def handler(server: PluginServerInterface, event, command: List[str],
-            event_type):
+async def handler(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
+                  event_type: MessageType):
     message = command[0]
-    reply(
+    await reply(
         event,
+        context,
         f"你提供的参数是：\"{message}\""
     )
 ```

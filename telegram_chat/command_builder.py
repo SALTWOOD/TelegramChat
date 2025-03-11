@@ -17,17 +17,14 @@ class CommandBuilder:
         self.commands = commands
         return result
 
-    def handle(self, command: str) -> tuple[bool, Any | None]:
+    async def handle(self, command: str) -> tuple[bool, Any | None]:
         func, params = self.get(command)
         if func is not None:
-            return (True, func(*params))
+            return (True, await func(*params))
         return (False, None)
     
-    def _run(self, func: Callable, args: list[Any]) -> Any:
-        return func(*args)
-
-    def __call__(self, command: str) -> Any | None:
-        return self.handle(command)
+    async def _run(self, func: Callable, args: list[Any]) -> Any:
+        return await func(*args)
     
     def get(self, command: str) -> tuple[Callable | None, Any | None]:
         for regex, types, func in self.commands:
@@ -48,7 +45,7 @@ class CommandBuilder:
         return f"<CommandBuilder commands: {command_count} command{'s' if command_count == 1 else ''}>"
 
     @staticmethod
-    def type_check(input_list: list[str], target_types: list[type] | None) -> list[Any]:
+    def type_check(input_list: tuple[Any, ...], target_types: list[type] | None) -> list[Any]:
         if target_types is None:
             if len(input_list) == 0:
                 return []
@@ -93,22 +90,3 @@ class CommandBuilder:
                     continue
 
         return result
-    
-if __name__ == '__main__':
-    import sys
-    
-    builder = CommandBuilder()
-    builder.add_command(re.compile(r'echo (.*)'), [str], lambda s: print(s))
-    builder.add_command(re.compile(r'add (.*) (.*)'), [int, int], lambda a, b: int(a) + int(b))
-    builder.add_command(re.compile(r'sub (.*) (.*)'), [int, int], lambda a, b: int(a) - int(b))
-    builder.add_command(re.compile(r'mul (.*) (.*)'), [int, int], lambda a, b: int(a) * int(b))
-    builder.add_command(re.compile(r'div (.*) (.*)'), [int, int], lambda a, b: int(a) / int(b))
-    builder.add_command("exit", None, lambda: sys.exit())
-    
-    while True:
-        command = input('> ')
-        success, result = builder.handle(command)
-        if success:
-            print(result)
-        else:
-            print('Unknown command')

@@ -142,6 +142,7 @@ async def execute(server: PluginServerInterface, event: Update, context: Context
     else: await send_to(event, context, "请开启 RCON 再执行此操作！")
 
 def load_data(server: PluginServerInterface):
+    global config, bindings, ban_list
     config = server.load_config_simple(target_class=Config) # type: ignore
     bindings = server.load_config_simple(
         "bindings.json",

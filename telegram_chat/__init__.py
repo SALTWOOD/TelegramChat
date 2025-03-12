@@ -328,11 +328,11 @@ async def on_user_info(server: PluginServerInterface, info: Info):
 
 async def on_player_joined(server: PluginServerInterface, player: str, info: Info):
     message = f"{player} 加入了游戏。"
-    await send_to_group(message, entities=[MessageEntity("italic", 0, len(player)), MessageEntity("bold", 0, len(message))])
+    await send_to_group(message, entities=[MessageEntity("italic", 0, len(message)), MessageEntity("bold", 0, len(player))])
 
 async def on_player_left(server: PluginServerInterface, player: str):
     message = f"{player} 离开了游戏。"
-    await send_to_group(message, entities=[MessageEntity("italic", 0, len(player)), MessageEntity("bold", 0, len(message))])
+    await send_to_group(message, entities=[MessageEntity("italic", 0, len(message)), MessageEntity("bold", 0, len(player))])
 
 async def on_message(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE):
     if event.message is None: return

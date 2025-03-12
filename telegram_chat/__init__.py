@@ -325,6 +325,14 @@ async def on_user_info(server: PluginServerInterface, info: Info):
     if config.forwardings["mc_to_tg"] is True and info.player:
         await send_to_group(f"{info.player}:\n{info.content}", entities=[MessageEntity("bold", 0, len(info.player) + 1)])
 
+async def on_player_joined(server: PluginServerInterface, player: str, info: Info):
+    message = f"{player} 加入了游戏。"
+    await send_to_group(message, entities=[MessageEntity("italic", 0, len(player)), MessageEntity("bold", 0, len(message))])
+
+async def on_player_left(server: PluginServerInterface, player: str):
+    message = f"{player} 离开了游戏。"
+    await send_to_group(message, entities=[MessageEntity("italic", 0, len(player)), MessageEntity("bold", 0, len(message))])
+
 async def on_message(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE):
     if event.message is None: return
     content = event.message.text

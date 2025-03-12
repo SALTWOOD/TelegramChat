@@ -20,10 +20,9 @@ import logging
 
 # 变量声明
 bot: TelegramBot
-
 bindings: dict[str, str]
-
 commands: CommandBuilder
+online_player_api: Any
 
 class Config(Serializable):
     group: int = 0
@@ -140,6 +139,20 @@ async def execute(server: PluginServerInterface, event: Update, context: Context
         result = server.rcon_query(command)
         if not result: return
         await send_to(event, context, result)
+    else: await send_to(event, context, "请开启 RCON 再执行此操作！")
+
+def load_data(server: PluginServerInterface):
+    config = server.load_config_simple(target_class=Config) # type: ignore
+    bindings = server.load_config_simple(
+        "bindings.json",
+        default_config={"data": {}},
+        echo_in_console=False
+    )["data"]
+    ban_list = server.load_config_simple(
+        "ban_list.json",
+        default_config={"data": []},
+        echo_in_console=False
+    )["data"]
 
 def save_data(server: PluginServerInterface):
     """
@@ -166,7 +179,7 @@ async def add_to_whitelist(server: PluginServerInterface, event: Update, context
     await send_to(
         event,
         context,
-        f"把 \"{player}\" 添加到服务器白名单里头去了~"
+        f"已把 \"{player}\" 添加到服务器白名单。"
     )
 
 async def remove_from_whitelist(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, player: str):
@@ -177,7 +190,7 @@ async def remove_from_whitelist(server: PluginServerInterface, event: Update, co
     await send_to(
         event,
         context,
-        f"把 \"{player}\" 从服务器白名单里头删掉了~"
+        f"已把 \"{player}\" 从服务器白名单中移除。"
     )
 
 async def send_to_group(msg: str, **kwargs):
@@ -267,30 +280,24 @@ def register_commands():
     # /bot-
     commands.add_command(re.compile(r'/bot-ban (\d*)'), [int], tg_command_bot_ban)
     commands.add_command(re.compile(r'/bot-pardon (\d*)'), [int], tg_command_bot_pardon)
+    
 
 # MCDR 事件处理函数
 async def on_load(server: PluginServerInterface, old):
     """
     插件加载操作
     """
-    global config, bindings, ban_list, bot, logger
+    global config, bindings, ban_list, bot, logger, online_player_api
 
-    config = server.load_config_simple(target_class=Config) # type: ignore
-    bindings = server.load_config_simple(
-        "bindings.json",
-        default_config={"data": {}},
-        echo_in_console=False
-    )["data"]
-    ban_list = server.load_config_simple(
-        "ban_list.json",
-        default_config={"data": []},
-        echo_in_console=False
-    )["data"]
+    load_data(server)
 
     server.register_help_message("!!tg", "向 Telegram 群聊发送聊天信息")
     server.register_command(
         Literal("!!tg").then(GreedyText("message").runs(mc_command_tg))
     )
+    
+    online_player_api = server.get_plugin_instance("online_player_api")
+    if online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")
 
     async def action(event: Update, context: ContextTypes.DEFAULT_TYPE):
         await on_message(server, event, context)
@@ -366,17 +373,13 @@ async def mc_command_tg(src: CommandSource, ctx: CommandContext):
 
 # TG 命令处理器
 async def tg_command_list(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, *args):
-    online_player_api = server.get_plugin_instance("online_player_api")
-    if online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")
     players = online_player_api.get_player_list()
 
-    # generate message
     players_count = len(players)
     message = f"服务器目前有 {players_count} 个玩家在线~"
     if players_count:
         message += f"\n=== 玩家列表 ===\n"
-        for player in players:
-            message += f"{player}\n"
+        for player in players: message += f"{player}\n"
 
     await send_to(event, context, message)
 
@@ -415,7 +418,7 @@ async def tg_command_bind_user(server: PluginServerInterface, event: Update, con
                 await send_to(
                     event,
                     context,
-                    f"没办法获取玩家 \"{player}\" 的资料信息，你是不是输入了一个离线玩家名或者不存在的玩家名？\n详细错误信息：{response.json().get('errorMessage')}"
+                    f"无法获取玩家 \"{player}\" 的资料信息，请检查是否输入了一个离线玩家名或者不存在的玩家名！\n详细错误信息：{response.json().get('errorMessage')}"
                 )
                 return
         except requests.exceptions.Timeout:
@@ -581,12 +584,11 @@ async def tg_command_bot_pardon(server: PluginServerInterface, event: Update, co
         )
         save_data(server)
 
-async def tg_command_help(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
-                          type: MessageType):
+async def tg_command_help(server, event, context, command, type):
     await send_to(event, context, Help.admin) if type == MessageType.ADMIN else await send_to(event, context, Help.user)
 
-def tg_command_ban(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
-                          event_type: MessageType): execute(server, event, context, f"ban {command[0]}") if event_type == MessageType.ADMIN else None
+def tg_command_ban(server, event, context, command, event_type):
+    execute(server, event, context, f"ban {command[0]}") if event_type == MessageType.ADMIN else None
 
-def tg_command_pardon(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
-                          event_type: MessageType): execute(server, event, context, f"pardon {command[0]}") if event_type == MessageType.ADMIN else None
+def tg_command_pardon(server, event, context, command, event_type):
+    execute(server, event, context, f"pardon {command[0]}") if event_type == MessageType.ADMIN else None

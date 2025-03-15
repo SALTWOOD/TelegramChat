@@ -1,20 +1,20 @@
-import re
-from typing import List, Dict, Any
-
 from mcdreforged.api.command import CommandContext, Literal, GreedyText
 from mcdreforged.api.utils import Serializable
 from mcdreforged.api.types import PluginServerInterface, CommandSource, Info
-from enum import Enum
 
 from telegram import Update, MessageEntity
 from telegram.ext import ContextTypes
 
+from enum import Enum
+import re
 import requests
 import time
+from typing import List, Dict, Any
+
 from .command_builder import CommandBuilder
 from .info import get_system_info
-from .version import *
 from .telegram import TelegramBot
+from .version import *
 
 import logging
 
@@ -354,7 +354,7 @@ async def on_message(server: PluginServerInterface, event: Update, context: Cont
     # 普通信息
     if config.forwardings["tg_to_mc"] is True and typ == ChatType.GROUP:
         id: str = str(get_id(event))
-        name: str = f"§a<{bindings[id]}>§7" if id in bindings else f"§4<{event.message.chat.first_name} ({id})>§7"
+        name: str = f"§a<{bindings[id]}>§7" if id in bindings else f"§4<{event.message.chat.full_name} ({id})>§7"
         server.say(f"§7[TG] {name}: {content}")
 
     # 封禁列表，不作应答

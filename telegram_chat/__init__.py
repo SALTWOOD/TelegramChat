@@ -17,8 +17,6 @@ from .telegram import TelegramBot
 # 变量声明
 bot: TelegramBot
 command_tree: CommandBuilder
-online_player_api: Any
-
 logger: logging.Logger
 
 # 实用函数
@@ -37,18 +35,13 @@ async def on_load(server: PluginServerInterface, old):
     """
     插件加载操作
     """
-    global bindings, ban_list, bot, logger, online_player_api
-
-    tools.load_data(server)
-
-    server.register_help_message("!!tg", "向 Telegram 群聊发送聊天信息")
-    server.register_command(
-        Literal("!!tg").then(GreedyText("message").runs(mc_command_tg))
-    )
+    global bindings, ban_list, bot, logger
     
-    online_player_api = server.get_plugin_instance("online_player_api")
-    if online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")
-
+    tools.load_data(server)
+    
+    config.online_player_api = server.get_plugin_instance("online_player_api")
+    if config.online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")
+    
     async def action(event: Update, context: ContextTypes.DEFAULT_TYPE):
         await on_message(server, event, context)
     
@@ -56,20 +49,22 @@ async def on_load(server: PluginServerInterface, old):
     bot.action = action
     bot.register()
     bot.start(True)
+    
     logger = server.logger
     register_commands()
+
+    server.register_help_message("!!tg", "向 Telegram 群聊发送聊天信息")
+    server.register_command(
+        Literal("!!tg").then(GreedyText("message").runs(mc_command_tg))
+    )
+    
     
     if old is not None and old.VERSION < VERSION:
-        tip: str = f"TelegramChat 已从 ver.{old.VERSION_STR} 更新到 ver.{VERSION_STR}"
+        tip: str = f"TelegramChat 已从 ver.{old.const.VERSION_STR} 更新到 ver.{VERSION_STR}"
         # await tools.send_to_group(tip)
         server.say(f"§7{tip}")
 
-def on_unload(server: PluginServerInterface):
-    """
-    卸载插件执行机器人停止操作
-    """
-    if bot is not None:
-        bot.stop()
+def on_unload(server: PluginServerInterface): bot.stop() if bot is not None else None
 
 async def on_user_info(server: PluginServerInterface, info: Info):
     if instance.forwardings["mc_to_tg"] is True and info.player:

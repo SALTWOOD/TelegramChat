@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 
 class Config(Serializable):
     group: int = 0
-
     admins: List[str] = []
 
     whitelist: Dict[str, Any] = {

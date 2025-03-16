@@ -12,9 +12,9 @@ from . import MessageType
 async def list(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, *args):
     players = online_player_api.get_player_list()
 
-    players_count = len(players)
-    message = f"服务器目前有 {players_count} 个玩家在线~"
-    if players_count:
+    count = len(players)
+    message = f"服务器目前有 {count} 个玩家在线~"
+    if count:
         message += f"\n=== 玩家列表 ===\n"
         for player in players: message += f"{player}\n"
 

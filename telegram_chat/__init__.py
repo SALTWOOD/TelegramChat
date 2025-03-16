@@ -124,4 +124,4 @@ async def mc_command_tg(src: CommandSource, ctx: CommandContext):
     msg = f"{player}:\n{ctx['message']}"
     await tools.send_to_group(msg, entities=[MessageEntity("bold", 0, len(player) + 1)])
 
-__all__ = ["bot", "logger"]
+__all__ = ["bot", "command_tree", "logger"]

@@ -9,6 +9,12 @@ from .. import tools
 from ..config import *
 from . import MessageType
 
+async def command(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
+                    event_type: MessageType):
+    cmd = command[0]
+    if event_type == MessageType.ADMIN:
+        await tools.execute(server, event, context, cmd)
+
 async def list(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, *args):
     players = online_player_api.get_player_list()
 
@@ -33,9 +39,3 @@ async def mc(
         server.say(f"§2[TG] §a<{bindings[id]}>§7 {command[0]}")
     else:
         server.say(f"§7[TG] §a<{bindings[id]}>§7 {command[0]}")
-
-async def command(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
-                    event_type: MessageType):
-    cmd = command[0]
-    if event_type == MessageType.ADMIN:
-        await tools.execute(server, event, context, cmd)

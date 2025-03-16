@@ -10,6 +10,24 @@ from .. import tools
 from ..config import *
 from . import MessageType
 
+async def bind_admin(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
+                          event_type: MessageType):
+    if event_type == MessageType.ADMIN:
+        id: str = command[0]
+        player: str = command[1]
+
+        if id in bindings:
+            await bind_unbind(server, event, context, [id], event_type)
+        bindings[id] = player
+        await tools.send_to(
+            event,
+            context,
+            f"成功将 Telegram 账号: {id} 绑定到 \"{player}\""
+        )
+        tools.save_data(server)
+        if instance.whitelist["add_when_bind"] is True:
+            await tools.add_to_whitelist(server, event, context, player)
+
 async def bind_user(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                     event_type: MessageType):
     player = command[0]
@@ -20,7 +38,7 @@ async def bind_user(server: PluginServerInterface, event: Update, context: Conte
         await tools.send_to(
             event,
             context,
-            f"你已经绑定了 \"{value}\"，请找管理员修改！"
+            f"你已经绑定了 \"{value}\"，请联系管理员修改！"
         )
         return
     if instance.whitelist["verify_player"] is True:
@@ -52,24 +70,6 @@ async def bind_user(server: PluginServerInterface, event: Update, context: Conte
     if instance.whitelist["add_when_bind"] is True:
         await tools.add_to_whitelist(server, event, context, player)
 
-async def bind_admin(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
-                          event_type: MessageType):
-    if event_type == MessageType.ADMIN:
-        id: str = command[0]
-        player: str = command[1]
-
-        if id in bindings:
-            await bind_unbind(server, event, context, [id], event_type)
-        bindings[id] = player
-        await tools.send_to(
-            event,
-            context,
-            f"成功将 Telegram 账号: {id} 绑定到 \"{player}\""
-        )
-        tools.save_data(server)
-        if instance.whitelist["add_when_bind"] is True:
-            await tools.add_to_whitelist(server, event, context, player)
-
 async def bind_unbind(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                            event_type: MessageType):
     if event_type == MessageType.ADMIN:
@@ -88,6 +88,9 @@ async def bind_unbind(server: PluginServerInterface, event: Update, context: Con
 
 async def bind_query(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                           event_type: MessageType):
+    """
+    查询 Minecraft 玩家与 Telegram 账号的绑定关系
+    """
     if event_type == MessageType.ADMIN:
         typ: str = command[0]
         value: str = command[1]

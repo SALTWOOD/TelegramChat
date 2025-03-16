@@ -2,14 +2,9 @@ from mcdreforged.api.utils import Serializable
 from typing import Any, Dict, List
 
 class Config(Serializable):
-    group: int = 0
     admins: List[str] = []
+    group: int = 0
 
-    whitelist: Dict[str, Any] = {
-        "add_when_bind": True,
-        "verify_player": True
-    }
-    
     forwardings: Dict[str, bool] = {
         "tg_to_mc": True,
         "mc_to_tg": True,
@@ -18,6 +13,11 @@ class Config(Serializable):
     telegram: Dict[str, Any] = {
         "token": None,
         "api": None
+    }
+    
+    whitelist: Dict[str, Any] = {
+        "add_when_bind": True,
+        "verify_player": True
     }
 
 instance: Config = Config()

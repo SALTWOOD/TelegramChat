@@ -11,6 +11,9 @@ from ..const import Help
 from ..info import get_system_info
 from . import ChatType, MessageType
 
+async def help(server, event, context, command, type):
+    await tools.send_to(event, context, Help.admin) if type == MessageType.ADMIN else await tools.send_to(event, context, Help.user)
+
 async def info(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                     event_type: MessageType):
     if event_type == MessageType.ADMIN and event.message and tools.get_type(event) == ChatType.PRIVATE:
@@ -19,17 +22,6 @@ async def info(server: PluginServerInterface, event: Update, context: ContextTyp
             context,
             get_system_info()
         )
-
-async def reload(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
-                      event_type: MessageType):
-    if event_type == MessageType.ADMIN:
-        await tools.send_to(
-            event,
-            context,
-            f"收到，在 2 秒后重载……"
-        )
-        time.sleep(2)
-        server.reload_plugin("telegram_chat")
 
 async def ping(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                     event_type: MessageType):
@@ -41,5 +33,12 @@ async def ping(server: PluginServerInterface, event: Update, context: ContextTyp
         f"Pong！服务在线，延迟 {delay:.2f}ms。"
     )
 
-async def help(server, event, context, command, type):
-    await tools.send_to(event, context, Help.admin) if type == MessageType.ADMIN else await tools.send_to(event, context, Help.user)
+async def reload(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
+                      event_type: MessageType):
+    if event_type == MessageType.ADMIN:
+        await tools.send_to(
+            event,
+            context,
+            f"收到，正在重载……"
+        )
+        server.reload_plugin("telegram_chat")

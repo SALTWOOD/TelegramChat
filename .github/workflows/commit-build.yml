@@ -67,5 +67,5 @@ jobs:
       - name: "Upload Artifact"
         uses: actions/upload-artifact@v4
         with:
-          name: "TelegramChat-${{ steps.check_version.outputs.version }}-beta-${{ steps.short_hash.outputs.short_hash }}.mcdr"
-          path: "TelegramChat-${{ steps.check_version.outputs.version }}-beta-${{ steps.short_hash.outputs.short_hash }}.mcdr"
+          name: "TelegramChat-v${{ steps.check_version.outputs.version }}-${{ steps.short_hash.outputs.short_hash }}.mcdr"
+          path: "TelegramChat-v${{ steps.check_version.outputs.version }}-${{ steps.short_hash.outputs.short_hash }}.mcdr"

@@ -82,4 +82,4 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: ${{ contains(github.ref, 'pre') }}
           files: |
-            TelegramChat-${{ steps.check_version.outputs.version }}.mcdr
+            TelegramChat-v${{ steps.check_version.outputs.version }}.mcdr

@@ -47,13 +47,14 @@ Run `git clone https://github.com/SALTWOOD/TelegramChat` or `git clone git@githu
 One of the most interesting features of this plugin is that you can extend it by adding custom commands via other MCDR plugins. Here's an example of a single-file plugin:
 
 ```Python
+from typing import Any, Callable, List
+
 from mcdreforged.api.types import PluginServerInterface
-from typing import Callable, List
 from telegram import Update
 from telegram.ext import ContextTypes
+
 import re
 
-reply: Callable
 PLUGIN_METADATA = {
     'id': 'tc_extension',
     'version': '1.0.0',
@@ -66,18 +67,21 @@ PLUGIN_METADATA = {
     }
 }
 
+plugin: Any
+send_to: Callable
+
 def on_load(server: PluginServerInterface, old):
-    global reply
-    sqc = server.get_plugin_instance("telegram_chat")
+    global plugin, send_to
+    plugin = server.get_plugin_instance("telegram_chat")
 
-    reply = sqc.reply
+    send_to = plugin.tools.send_to
 
-    sqc.commands.add_command(re.compile(r'/your-command (.*)'), [str], handler)
+    plugin.command_tree.add_command(re.compile(r'/your-command (.*)'), [str], handler)
 
 async def handler(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                   event_type: MessageType):
     message = command[0]
-    await reply(
+    await send_to(
         event,
         context,
         f"You provided the parameter: \"{message}\""

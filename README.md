@@ -47,13 +47,14 @@
 这是这个插件最有意思的功能之一，可以通过添加其他 MCDR 插件的方式为这个插件添加自定义命令。
 这里展出一个单文件插件的代码作为示例：
 ```Python
+from typing import Any, Callable, List
+
 from mcdreforged.api.types import PluginServerInterface
-from typing import Callable, List
 from telegram import Update
 from telegram.ext import ContextTypes
+
 import re
 
-reply: Callable
 PLUGIN_METADATA = {
     'id': 'tc_extension',
     'version': '1.0.0',
@@ -62,22 +63,25 @@ PLUGIN_METADATA = {
     'author': 'NONE',
     'link': 'https://github.com',
     'dependencies': {
-        'salty_telegram': '>=2.0.0'
+        'telegram_chat': '>=2.0.0'
     }
 }
 
+plugin: Any
+send_to: Callable
+
 def on_load(server: PluginServerInterface, old):
-    global reply
-    sqc = server.get_plugin_instance("telegram_chat")
+    global plugin, send_to
+    plugin = server.get_plugin_instance("telegram_chat")
 
-    reply = sqc.reply
+    send_to = plugin.tools.send_to
 
-    sqc.commands.add_command(re.compile(r'/你的命令 (.*)'), [str], handler)
+    plugin.command_tree.add_command(re.compile(r'/你的命令 (.*)'), [str], handler)
 
 async def handler(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                   event_type: MessageType):
     message = command[0]
-    await reply(
+    await send_to(
         event,
         context,
         f"你提供的参数是：\"{message}\""
@@ -85,5 +89,6 @@ async def handler(server: PluginServerInterface, event: Update, context: Context
 ```
 
 # 特别鸣谢
+- [QQChat](https://github.com/AnzhiZhang/MCDReforgedPlugins/tree/master/src/qq_chat) - TelegramChat 前身的前身
 - [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) - 提供接入到 Telegram 的接口
 - **SALTWO∅D 服务器的各位** - 帮我测试机器人，还赶在发布 Release 之前帮我发现了越权漏洞（

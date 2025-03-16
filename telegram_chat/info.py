@@ -1,5 +1,5 @@
-import psutil
 import platform
+import psutil
 
 def get_system_info():
     # 获取系统的基本信息

@@ -1,5 +1,5 @@
-from typing import Callable, Any
 import re
+from typing import Any, Callable
 
 class CommandBuilder:
     def __init__(self):

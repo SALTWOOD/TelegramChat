@@ -1,10 +1,11 @@
-import logging
-from telegram import Update, Bot
-from telegram.ext import Application, ApplicationBuilder, MessageHandler, filters
-from typing import Callable
 import asyncio
-import time
+import logging
 import threading
+import time
+from typing import Callable
+
+from telegram import Bot, Update
+from telegram.ext import Application, ApplicationBuilder, filters, MessageHandler
 
 class TelegramBot:
     action: Callable

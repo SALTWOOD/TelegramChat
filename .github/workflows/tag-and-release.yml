@@ -47,7 +47,7 @@ jobs:
             echo "Version match: Proceeding with the build."
           fi
 
-          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "version=$PLUGIN_VERSION" >> $GITHUB_OUTPUT
 
       - name: "Create Exclude List from .packignore"
         id: exclude_list

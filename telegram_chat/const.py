@@ -1,4 +1,4 @@
-VERSION = (2, 0, 1)
+VERSION = (2, 0, 0)
 VERSION_STR = '.'.join(map(str, VERSION))
 
 class Help():

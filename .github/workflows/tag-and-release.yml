@@ -66,15 +66,15 @@ jobs:
       - name: "Package the Plugin"
         run: |
           # Create the zip file excluding files listed in .packignore
-          zip -r TelegramChat-${{ steps.check_version.outputs.version }}.zip * \
+          zip -r TelegramChat-v${{ steps.check_version.outputs.version }}.zip * \
             ${{ steps.exclude_list.outputs.exclude_list }}
-          mv TelegramChat-${{ steps.check_version.outputs.version }}.zip TelegramChat-${{ steps.check_version.outputs.version }}.mcdr
+          mv TelegramChat-v${{ steps.check_version.outputs.version }}.zip TelegramChat-v${{ steps.check_version.outputs.version }}.mcdr
 
       - name: "Upload Artifact"
         uses: actions/upload-artifact@v4
         with:
-          name: "TelegramChat-${{ steps.check_version.outputs.version }}.mcdr"
-          path: "TelegramChat-${{ steps.check_version.outputs.version }}.mcdr"
+          name: "TelegramChat-v${{ steps.check_version.outputs.version }}.mcdr"
+          path: "TelegramChat-v${{ steps.check_version.outputs.version }}.mcdr"
 
       - name: "Create GitHub Release"
         uses: "marvinpinto/action-automatic-releases@latest"

@@ -1,0 +1,16 @@
+{
+    "id": "telegram_chat",
+    "version": "2.0.1",
+    "name": "TelegramChat",
+    "description": {
+        "en_us": "Scalable Telegram-Bot.",
+        "zh_cn": "一个可扩展的 TG 机器人"
+    },
+    "author": [
+        "SALTWOOD"
+    ],
+    "dependencies": {
+        "online_player_api": "^1.0.0",
+        "python": ">=3.10"
+    }
+}

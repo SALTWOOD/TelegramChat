@@ -1,0 +1,71 @@
+name: "Commit and Build TelegramChat"
+
+on:
+  push:
+    branches: ['master']
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    name: "Check and Package"
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Generate Short Hash"
+        id: short_hash
+        run: |
+          SHORT_HASH=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "short_hash=$SHORT_HASH" >> $GITHUB_OUTPUT
+
+      - name: "Install Python"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip git zip
+
+      - name: "Check Version from Files"
+        id: check_version
+        run: |
+          PLUGIN_VERSION=$(jq -r '.version' mcdreforged.plugin.json)
+
+          echo "Plugin version from mcdreforged.plugin.json: $PLUGIN_VERSION"
+
+          PYTHON_VERSION=$(python -c "import importlib.util, sys; spec = importlib.util.spec_from_file_location('version', 'telegram_chat/const.py'); version = importlib.util.module_from_spec(spec); sys.modules['version'] = version; spec.loader.exec_module(version); print(version.VERSION_STR)")
+
+          echo "Python VERSION_STR: $PYTHON_VERSION"
+
+          if [ "$PLUGIN_VERSION" != "$PYTHON_VERSION" ]; then
+            echo "Version mismatch: Plugin version and Python VERSION_STR do not match."
+            exit 1
+          else
+            echo "Version match: Proceeding with the build."
+          fi
+
+          echo "version=$PLUGIN_VERSION" >> $GITHUB_OUTPUT
+
+      - name: "Create Exclude List from .packignore"
+        id: exclude_list
+        run: |
+          # Check if .packignore exists and create an exclude list
+          if [ -f ".packignore" ]; then
+            # Read the .packignore file and format for zip exclusion
+            EXCLUDE_LIST=$(cat .packignore | sed 's|^|"|' | sed 's|$|"|' | tr '\n' ' ')
+            echo "Exclude list: $EXCLUDE_LIST"
+            echo "exclude_list=-x $EXCLUDE_LIST" >> $GITHUB_OUTPUT
+          else
+            echo ".packignore not found, no files will be excluded."
+            echo "exclude_list=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Package the Plugin"
+        run: |
+          # Create the zip file excluding files listed in .packignore
+          zip -r TelegramChat-${{ steps.check_version.outputs.version }}-beta-${{ steps.short_hash.outputs.short_hash }}.zip * \
+            ${{ steps.exclude_list.outputs.exclude_list }}
+          mv TelegramChat-${{ steps.check_version.outputs.version }}-beta-${{ steps.short_hash.outputs.short_hash }}.zip TelegramChat-${{ steps.check_version.outputs.version }}-beta-${{ steps.short_hash.outputs.short_hash }}.mcdr
+
+      - name: "Upload Artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "TelegramChat-v${{ steps.check_version.outputs.version }}-${{ steps.short_hash.outputs.short_hash }}.mcdr"
+          path: "TelegramChat-v${{ steps.check_version.outputs.version }}-${{ steps.short_hash.outputs.short_hash }}.mcdr"

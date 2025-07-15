@@ -2,6 +2,7 @@ from mcdreforged.api.utils import Serializable
 from typing import Any, Dict, List
 import logging
 from .telegram_manager import TelegramBot
+from mcdreforged.api.types import PluginServerInterface
 
 class Config(Serializable):
     admins: List[str] = []
@@ -28,3 +29,34 @@ ban_list: List[int] = []
 online_player_api: Any = None # type: ignore
 bot: TelegramBot = None # type: ignore
 logger: logging.Logger = None # type: ignore
+
+def load_data(server: PluginServerInterface):
+    global config, bindings, ban_list
+    config = server.load_config_simple(target_class=Config) # type: ignore
+    bindings = server.load_config_simple(
+        "bindings.json",
+        default_config={"data": {}},
+        echo_in_console=False
+    )["data"]
+    ban_list = server.load_config_simple(
+        "ban_list.json",
+        default_config={"data": []},
+        echo_in_console=False
+    )["data"]
+
+def save_data(server: PluginServerInterface):
+    """
+    保存数据
+    """
+    server.save_config_simple(
+        {
+            "data": bindings,
+        },
+        "bindings.json"
+    )
+    server.save_config_simple(
+        {
+            "data": ban_list,
+        },
+        "ban_list.json"
+    )

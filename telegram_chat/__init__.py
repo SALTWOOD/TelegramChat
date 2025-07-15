@@ -35,7 +35,7 @@ async def on_load(server: PluginServerInterface, old):
     """
     global bindings, ban_list, bot, logger
     
-    tools.load_data(server)
+    load_data(server)
     
     online_player_api = server.get_plugin_instance("online_player_api")
     if online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")

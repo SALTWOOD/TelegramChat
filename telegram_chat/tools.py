@@ -34,37 +34,6 @@ async def execute(server: PluginServerInterface, event: Update, context: Context
         await send_to(event, context, result)
     else: await send_to(event, context, "请开启 RCON 再执行此操作！")
 
-def load_data(server: PluginServerInterface):
-    global config, bindings, ban_list
-    config = server.load_config_simple(target_class=Config)
-    bindings = server.load_config_simple(
-        "bindings.json",
-        default_config={"data": {}},
-        echo_in_console=False
-    )["data"]
-    ban_list = server.load_config_simple(
-        "ban_list.json",
-        default_config={"data": []},
-        echo_in_console=False
-    )["data"]
-
-def save_data(server: PluginServerInterface):
-    """
-    保存数据
-    """
-    server.save_config_simple(
-        {
-            "data": bindings,
-        },
-        "bindings.json"
-    )
-    server.save_config_simple(
-        {
-            "data": ban_list,
-        },
-        "ban_list.json"
-    )
-
 async def send_to_group(msg: str, **kwargs):
     """
     向所有群聊广播

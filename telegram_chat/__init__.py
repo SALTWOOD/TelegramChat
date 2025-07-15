@@ -12,12 +12,10 @@ from .commands import ChatType, MessageType, register_commands
 from .command_builder import CommandBuilder
 from .config import *
 from .const import VERSION, VERSION_STR
-from .telegram import TelegramBot
+from .telegram_manager import TelegramBot
 
 # 变量声明
-bot: TelegramBot
 command_tree: CommandBuilder
-logger: logging.Logger
 
 # 实用函数
 async def execute_bot_command(server: PluginServerInterface, event: Update, context: CommandContext | ContextTypes.DEFAULT_TYPE, content: str, type: MessageType):
@@ -39,13 +37,13 @@ async def on_load(server: PluginServerInterface, old):
     
     tools.load_data(server)
     
-    config.online_player_api = server.get_plugin_instance("online_player_api")
-    if config.online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")
+    online_player_api = server.get_plugin_instance("online_player_api")
+    if online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")
     
     async def action(event: Update, context: ContextTypes.DEFAULT_TYPE):
         await on_message(server, event, context)
     
-    bot = TelegramBot(server.logger, instance.telegram["token"]) if instance.telegram["api"] is None else TelegramBot(server.logger, instance.telegram["token"], instance.telegram["api"])
+    bot = TelegramBot(server.logger, config.telegram["token"]) if config.telegram["api"] is None else TelegramBot(server.logger, config.telegram["token"], config.telegram["api"])
     bot.action = action
     bot.register()
     bot.start(True)
@@ -67,7 +65,7 @@ async def on_load(server: PluginServerInterface, old):
 def on_unload(server: PluginServerInterface): bot.stop() if bot is not None else None
 
 async def on_user_info(server: PluginServerInterface, info: Info):
-    if instance.forwardings["mc_to_tg"] is True and info.player:
+    if config.forwardings["mc_to_tg"] is True and info.player:
         await tools.send_to_group(f"{info.player}:\n{info.content}", entities=[MessageEntity("bold", 0, len(info.player) + 1)])
 
 async def on_player_joined(server: PluginServerInterface, player: str, info: Info):
@@ -89,14 +87,14 @@ async def on_message(server: PluginServerInterface, event: Update, context: Cont
     # 防止自己的机器人被别人拉去用还越权
     match (typ):
         case ChatType.PRIVATE:
-            if str(tools.get_id(event)) not in instance.admins: return
+            if str(tools.get_id(event)) not in config.admins: return
         case ChatType.GROUP:
-            if str(tools.get_id(event)) not in instance.admins and event.message.chat.id != instance.group: return
+            if str(tools.get_id(event)) not in config.admins and event.message.chat.id != config.group: return
         case _:
             return
     
     # 普通信息
-    if instance.forwardings["tg_to_mc"] is True and typ == ChatType.GROUP:
+    if config.forwardings["tg_to_mc"] is True and typ == ChatType.GROUP:
         id: str = str(tools.get_id(event))
         name: str = f"§a<{bindings[id]}>§7" if id in bindings else f"§4<{event.message.chat.full_name} ({id})>§7"
         server.say(f"§7[TG] {name}: {content}")
@@ -118,7 +116,7 @@ async def mc_command_tg(src: CommandSource, ctx: CommandContext):
         if player not in bindings.values():
             src.reply("请先在群内绑定你的账号！")
             return
-        elif (not str(next((key for key, value in bindings.items() if value == player), 0)) in instance.admins and not src.has_permission(2)) and (player != "Console"):
+        elif (not str(next((key for key, value in bindings.items() if value == player), 0)) in config.admins and not src.has_permission(2)) and (player != "Console"):
             src.reply("你没有足够的权限！")
             return
     msg = f"{player}:\n{ctx['message']}"

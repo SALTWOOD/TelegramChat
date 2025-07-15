@@ -4,15 +4,7 @@ from enum import Enum
 from .. import const, tools
 from ..command_builder import CommandBuilder
 from . import bind, game, other, user, whitelist
-
-class MessageType(Enum):
-    USER = 0
-    ADMIN = 1
-
-class ChatType(Enum):
-    PRIVATE = 0
-    GROUP = SUPERGROUP = 1
-    OTHER = 2
+from .types import ChatType, MessageType
 
 # 实用函数
 def register_commands():

@@ -7,7 +7,7 @@ from telegram.ext import ContextTypes
 
 from .. import tools
 from ..config import *
-from . import MessageType
+from .types import MessageType
 
 async def command(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                     event_type: MessageType):
@@ -35,7 +35,7 @@ async def mc(
 ):
 
     id = str(tools.get_id(event))
-    if id in bindings.keys() and id in instance.admins:
+    if id in bindings.keys() and id in config.admins:
         server.say(f"§2[TG] §a<{bindings[id]}>§7 {command[0]}")
     else:
         server.say(f"§7[TG] §a<{bindings[id]}>§7 {command[0]}")

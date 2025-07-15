@@ -1,5 +1,7 @@
 from mcdreforged.api.utils import Serializable
 from typing import Any, Dict, List
+import logging
+from .telegram_manager import TelegramBot
 
 class Config(Serializable):
     admins: List[str] = []
@@ -20,7 +22,9 @@ class Config(Serializable):
         "verify_player": True
     }
 
-instance: Config = Config()
-bindings: dict[str, str]
+config: Config = Config()
+bindings: dict[str, str] = {}
 ban_list: List[int] = []
-online_player_api: Any = None
+online_player_api: Any = None # type: ignore
+bot: TelegramBot = None # type: ignore
+logger: logging.Logger = None # type: ignore

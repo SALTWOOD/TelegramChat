@@ -4,7 +4,8 @@ from mcdreforged.api.types import CommandSource, PluginServerInterface
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from . import ChatType, MessageType, bot, config, logger
+from .commands import ChatType, MessageType
+from .config import *
 
 def get_type(event: Update) -> ChatType:
     if event.message is None: raise Exception("event.message is none.")
@@ -34,8 +35,9 @@ async def execute(server: PluginServerInterface, event: Update, context: Context
     else: await send_to(event, context, "请开启 RCON 再执行此操作！")
 
 def load_data(server: PluginServerInterface):
-    config.instance = server.load_config_simple(target_class=Config) # type: ignore
-    config.bindings = server.load_config_simple(
+    global config, bindings, ban_list
+    config = server.load_config_simple(target_class=Config)
+    bindings = server.load_config_simple(
         "bindings.json",
         default_config={"data": {}},
         echo_in_console=False
@@ -52,13 +54,13 @@ def save_data(server: PluginServerInterface):
     """
     server.save_config_simple(
         {
-            "data": config.bindings,
+            "data": bindings,
         },
         "bindings.json"
     )
     server.save_config_simple(
         {
-            "data": config.ban_list,
+            "data": ban_list,
         },
         "ban_list.json"
     )
@@ -67,7 +69,8 @@ async def send_to_group(msg: str, **kwargs):
     """
     向所有群聊广播
     """
-    await bot.bot.send_message(chat_id=config.instance.group, text=msg, **kwargs)
+    if isinstance(config, Config):
+        await bot.bot.send_message(chat_id=config.group, text=msg, **kwargs)
         
 async def send_to(event: Update | CommandSource, context: ContextTypes.DEFAULT_TYPE | CommandContext, message: str, at_sender: bool = True):
     """
@@ -86,7 +89,9 @@ def parse_event_type(event: Update) -> MessageType:
     """
     处理事件类型
     """
-    return MessageType.ADMIN if str(get_id(event)) in config.instance.admins else MessageType.USER
+    if isinstance(config, Config):
+        return MessageType.ADMIN if str(get_id(event)) in config.admins else MessageType.USER
+    raise Exception("Config instance is not initialized or is not of type Config.")
 
 async def add_to_whitelist(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, player: str):
     """

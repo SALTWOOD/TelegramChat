@@ -7,7 +7,7 @@ from telegram.ext import ContextTypes
 
 from .. import tools
 from ..config import *
-from . import MessageType
+from .types import MessageType
 
 async def bot_ban(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                        event_type: MessageType):

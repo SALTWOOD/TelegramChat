@@ -6,7 +6,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from .. import tools
-from . import MessageType
+from .types import MessageType
 
 async def whitelist_add(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                              event_type: MessageType):

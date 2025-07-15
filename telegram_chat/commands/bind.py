@@ -8,7 +8,7 @@ from telegram.ext import ContextTypes
 
 from .. import tools
 from ..config import *
-from . import MessageType
+from .types import MessageType
 
 async def bind_admin(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
                           event_type: MessageType):
@@ -25,7 +25,7 @@ async def bind_admin(server: PluginServerInterface, event: Update, context: Cont
             f"成功将 Telegram 账号: {id} 绑定到 \"{player}\""
         )
         tools.save_data(server)
-        if instance.whitelist["add_when_bind"] is True:
+        if config.whitelist["add_when_bind"] is True:
             await tools.add_to_whitelist(server, event, context, player)
 
 async def bind_user(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
@@ -41,7 +41,7 @@ async def bind_user(server: PluginServerInterface, event: Update, context: Conte
             f"你已经绑定了 \"{value}\"，请联系管理员修改！"
         )
         return
-    if instance.whitelist["verify_player"] is True:
+    if config.whitelist["verify_player"] is True:
         try:
             # 检查玩家档案是否存在
             response = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{player}", timeout=10)
@@ -67,7 +67,7 @@ async def bind_user(server: PluginServerInterface, event: Update, context: Conte
         f"成功绑定到 \"{player}\""
     )
     tools.save_data(server)
-    if instance.whitelist["add_when_bind"] is True:
+    if config.whitelist["add_when_bind"] is True:
         await tools.add_to_whitelist(server, event, context, player)
 
 async def bind_unbind(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
@@ -83,7 +83,7 @@ async def bind_unbind(server: PluginServerInterface, event: Update, context: Con
                 context,
                 f"成功解除 Telegram 账号: {id} 对 \"{player}\" 的绑定！"
             )
-            if instance.whitelist["add_when_bind"] is True:
+            if config.whitelist["add_when_bind"] is True:
                 await tools.remove_from_whitelist(server, event, context, player)
 
 async def bind_query(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],

@@ -7,7 +7,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from .. import tools
-from ..config import *
+from ..config import ConfigManager
 from .types import MessageType
 
 async def bind_admin(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
@@ -16,9 +16,9 @@ async def bind_admin(server: PluginServerInterface, event: Update, context: Cont
         id: str = command[0]
         player: str = command[1]
 
-        if id in bindings:
+        if id in ConfigManager.bindings:
             await bind_unbind(server, event, context, [id], event_type)
-        bindings[id] = player
+        ConfigManager.bindings[id] = player
         await tools.send_to(
             event,
             context,
@@ -33,8 +33,8 @@ async def bind_user(server: PluginServerInterface, event: Update, context: Conte
     player = command[0]
     user_id = str(tools.get_id(event))
 
-    if user_id in bindings.keys():
-        value = bindings[user_id]
+    if user_id in ConfigManager.bindings.keys():
+        value = ConfigManager.bindings[user_id]
         await tools.send_to(
             event,
             context,
@@ -60,7 +60,7 @@ async def bind_user(server: PluginServerInterface, event: Update, context: Conte
             )
             return
 
-    bindings[user_id] = player
+    ConfigManager.bindings[user_id] = player
     await tools.send_to(
         event,
         context,
@@ -74,9 +74,9 @@ async def bind_unbind(server: PluginServerInterface, event: Update, context: Con
                            event_type: MessageType):
     if event_type == MessageType.ADMIN:
         id: str = command[0]
-        if id in bindings:
-            player: str = bindings[id]
-            del bindings[id]
+        if id in ConfigManager.bindings:
+            player: str = ConfigManager.bindings[id]
+            del ConfigManager.bindings[id]
             ConfigManager.save_data(server)
             await tools.send_to(
                 event,
@@ -97,8 +97,8 @@ async def bind_query(server: PluginServerInterface, event: Update, context: Cont
         match typ:
             case "TG":
                 result = None
-                if value in bindings:
-                    result = bindings[value]
+                if value in ConfigManager.bindings:
+                    result = ConfigManager.bindings[value]
 
                 if result is None:
                     await tools.send_to(
@@ -114,8 +114,8 @@ async def bind_query(server: PluginServerInterface, event: Update, context: Cont
                 )
             case "ID":
                 result = None
-                if value in bindings.values():
-                    result = [k for k, v in bindings.items() if v == value]
+                if value in ConfigManager.bindings.values():
+                    result = [k for k, v in ConfigManager.bindings.items() if v == value]
 
                 if result is None:
                     await tools.send_to(

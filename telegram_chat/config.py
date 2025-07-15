@@ -33,14 +33,13 @@ class ConfigManager:
 
     @staticmethod
     def load_data(server: PluginServerInterface):
-        global config, bindings, ban_list
-        config = server.load_config_simple(target_class=Config) # type: ignore
-        bindings = server.load_config_simple(
+        ConfigManager.config = server.load_config_simple(target_class=Config) # type: ignore
+        ConfigManager.bindings = server.load_config_simple(
             "bindings.json",
             default_config={"data": {}},
             echo_in_console=False
         )["data"]
-        ban_list = server.load_config_simple(
+        ConfigManager.ban_list = server.load_config_simple(
             "ban_list.json",
             default_config={"data": []},
             echo_in_console=False
@@ -53,13 +52,13 @@ class ConfigManager:
         """
         server.save_config_simple(
             {
-                "data": bindings,
+                "data": ConfigManager.bindings,
             },
             "bindings.json"
         )
         server.save_config_simple(
             {
-                "data": ban_list,
+                "data": ConfigManager.ban_list,
             },
             "ban_list.json"
         )

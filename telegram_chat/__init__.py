@@ -10,7 +10,7 @@ from telegram.ext import ContextTypes
 from . import tools
 from .commands import ChatType, MessageType, register_commands
 from .command_builder import CommandBuilder
-from .config import *
+from .config import ConfigManager
 from .const import VERSION, VERSION_STR
 from .telegram_manager import TelegramBot
 
@@ -33,22 +33,21 @@ async def on_load(server: PluginServerInterface, old):
     """
     插件加载操作
     """
-    global bindings, ban_list, bot, logger
     
     ConfigManager.load_data(server)
     
-    online_player_api = server.get_plugin_instance("online_player_api")
-    if online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")
+    ConfigManager.online_player_api = server.get_plugin_instance("online_player_api")
+    if ConfigManager.online_player_api is None: raise Exception("Unable to load dependency \"online_player_api\"")
     
     async def action(event: Update, context: ContextTypes.DEFAULT_TYPE):
         await on_message(server, event, context)
 
-    bot = TelegramBot(server.logger, ConfigManager.config.telegram["token"]) if ConfigManager.config.telegram["api"] is None else TelegramBot(server.logger, ConfigManager.config.telegram["token"], ConfigManager.config.telegram["api"])
-    bot.action = action
-    bot.register()
-    bot.start(True)
+    ConfigManager.bot = TelegramBot(server.logger, ConfigManager.config.telegram["token"]) if ConfigManager.config.telegram["api"] is None else TelegramBot(server.logger, ConfigManager.config.telegram["token"], ConfigManager.config.telegram["api"])
+    ConfigManager.bot.action = action
+    ConfigManager.bot.register()
+    ConfigManager.bot.start(True)
     
-    logger = server.logger
+    ConfigManager.logger = server.logger
     register_commands()
 
     server.register_help_message("!!tg", "向 Telegram 群聊发送聊天信息")
@@ -62,7 +61,7 @@ async def on_load(server: PluginServerInterface, old):
         # await tools.send_to_group(tip)
         server.say(f"§7{tip}")
 
-def on_unload(server: PluginServerInterface): bot.stop() if bot is not None else None
+def on_unload(server: PluginServerInterface): ConfigManager.bot.stop() if ConfigManager.bot is not None else None
 
 async def on_user_info(server: PluginServerInterface, info: Info):
     if ConfigManager.config.forwardings["mc_to_tg"] is True and info.player:
@@ -81,7 +80,7 @@ async def on_message(server: PluginServerInterface, event: Update, context: Cont
     content = event.message.text
     if content is None: return
     event_type = tools.parse_event_type(event)
-    logger.debug(f"Update 数据：\n{event}")
+    ConfigManager.logger.debug(f"Update 数据：\n{event}")
     
     typ = tools.get_type(event)
     # 防止自己的机器人被别人拉去用还越权
@@ -96,11 +95,11 @@ async def on_message(server: PluginServerInterface, event: Update, context: Cont
     # 普通信息
     if ConfigManager.config.forwardings["tg_to_mc"] is True and typ == ChatType.GROUP:
         id: str = str(tools.get_id(event))
-        name: str = f"§a<{bindings[id]}>§7" if id in bindings else f"§4<{event.message.chat.full_name} ({id})>§7"
+        name: str = f"§a<{ConfigManager.bindings[id]}>§7" if id in ConfigManager.bindings else f"§4<{event.message.chat.full_name} ({id})>§7"
         server.say(f"§7[TG] {name}: {content}")
 
     # 封禁列表，不作应答
-    if tools.get_id(event) in ban_list:
+    if tools.get_id(event) in ConfigManager.ban_list:
         server.logger.debug(f"用户 {tools.get_id(event)} 已被封禁，拒绝处理其请求")
         return
         
@@ -113,13 +112,11 @@ async def mc_command_tg(src: CommandSource, ctx: CommandContext):
     player = "Console"
     if src.is_player:
         player = src.player # type: ignore
-        if player not in bindings.values():
+        if player not in ConfigManager.bindings.values():
             src.reply("请先在群内绑定你的账号！")
             return
-        elif (not str(next((key for key, value in bindings.items() if value == player), 0)) in ConfigManager.config.admins and not src.has_permission(2)) and (player != "Console"):
+        elif (not str(next((key for key, value in ConfigManager.bindings.items() if value == player), 0)) in ConfigManager.config.admins and not src.has_permission(2)) and (player != "Console"):
             src.reply("你没有足够的权限！")
             return
     msg = f"{player}:\n{ctx['message']}"
     await tools.send_to_group(msg, entities=[MessageEntity("bold", 0, len(player) + 1)])
-
-__all__ = ["bot", "command_tree", "logger"]

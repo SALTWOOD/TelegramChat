@@ -33,6 +33,8 @@ async def on_load(server: PluginServerInterface, old):
     """
     插件加载操作
     """
+    global command_tree
+    command_tree = register_commands()
     
     ConfigManager.load_data(server)
     
@@ -48,7 +50,7 @@ async def on_load(server: PluginServerInterface, old):
     ConfigManager.bot.start(True)
     
     ConfigManager.logger = server.logger
-    register_commands()
+    
 
     server.register_help_message("!!tg", "向 Telegram 群聊发送聊天信息")
     server.register_command(

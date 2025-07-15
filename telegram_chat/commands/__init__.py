@@ -11,8 +11,6 @@ def register_commands():
     """
     注册命令树
     """
-    global command_tree
-    
     def run_command(command, need_admin: bool = False):
         async def _run(server, event, context, _, type):
             if not need_admin or type == MessageType.ADMIN:
@@ -69,3 +67,5 @@ def register_commands():
     # /bot-
     command_tree.add_command(re.compile(r'/bot-ban (\d*)'), [int], user.bot_ban)
     command_tree.add_command(re.compile(r'/bot-pardon (\d*)'), [int], user.bot_pardon)
+    
+    return command_tree

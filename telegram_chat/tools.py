@@ -5,7 +5,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from .commands import ChatType, MessageType
-from .config import *
+from .config import ConfigManager, Config
 
 def get_type(event: Update) -> ChatType:
     if event.message is None: raise Exception("event.message is none.")
@@ -38,28 +38,28 @@ async def send_to_group(msg: str, **kwargs):
     """
     向所有群聊广播
     """
-    if isinstance(config, Config):
-        await bot.bot.send_message(chat_id=config.group, text=msg, **kwargs)
+    if isinstance(ConfigManager.config, Config):
+        await ConfigManager.bot.bot.send_message(chat_id=ConfigManager.config.group, text=msg, **kwargs)
         
 async def send_to(event: Update | CommandSource, context: ContextTypes.DEFAULT_TYPE | CommandContext, message: str, at_sender: bool = True):
     """
     回复信息
     """
-    logger.debug(f"发送信息：{message}")
+    ConfigManager.logger.debug(f"发送信息：{message}")
     if (isinstance(event, Update) and not isinstance(context, CommandContext)
         and event.effective_chat is not None and event.effective_message is not None): # 后面的是保证 IDE 不打波浪线
-        logger.debug(f"发送到 Telegram，chat_id={event.effective_chat.id}, reply_to_message_id={event.effective_chat.id}")
+        ConfigManager.logger.debug(f"发送到 Telegram，chat_id={event.effective_chat.id}, reply_to_message_id={event.effective_chat.id}")
         await context.bot.send_message(chat_id=event.effective_chat.id, text=message, reply_to_message_id=event.effective_message.id if at_sender else None)
     elif isinstance(event, CommandSource):
-        logger.debug(f"发送到 CommandSource。")
+        ConfigManager.logger.debug(f"发送到 CommandSource。")
         event.reply(message)
 
 def parse_event_type(event: Update) -> MessageType:
     """
     处理事件类型
     """
-    if isinstance(config, Config):
-        return MessageType.ADMIN if str(get_id(event)) in config.admins else MessageType.USER
+    if isinstance(ConfigManager.config, Config):
+        return MessageType.ADMIN if str(get_id(event)) in ConfigManager.config.admins else MessageType.USER
     raise Exception("Config instance is not initialized or is not of type Config.")
 
 async def add_to_whitelist(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, player: str):

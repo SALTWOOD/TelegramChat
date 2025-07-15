@@ -26,7 +26,7 @@ class CommandBuilder:
     async def _run(self, func: Callable, args: list[Any]) -> Any:
         return await func(*args)
     
-    def get(self, command: str) -> tuple[Callable | None, Any | None]:
+    def get(self, command: str) -> tuple[Callable | None, Any]:
         for regex, types, func in self.commands:
             try:
                 if isinstance(regex, re.Pattern):
@@ -36,9 +36,9 @@ class CommandBuilder:
                         return (func, args)
                     else: continue
                 elif isinstance(regex, str) and regex == command:
-                    return (func, None)
+                    return (func, [])
             except ValueError: ...
-        return (None, None)
+        return (None, [])
     
     def __repr__(self) -> str:
         command_count = len(self.commands)

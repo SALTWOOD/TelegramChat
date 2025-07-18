@@ -124,8 +124,9 @@ async def bind_query(server: PluginServerInterface, event: Update, context: Cont
                         f"没有查询到结果！"
                     )
                     return
+                query_result = '\n'.join(map(str, [f'Telegram: {key} 绑定的是 "{value}"' for key in result]))
                 await tools.send_to(
                     event,
                     context,
-                    f"查询到如下结果：\n{'\n'.join(map(str, [f'Telegram: {key} 绑定的是 \"{value}\"' for key in result]))}"
+                    f"查询到如下结果：\n{query_result}"
                 )

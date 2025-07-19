@@ -4,7 +4,7 @@ from mcdreforged.api.types import CommandSource, PluginServerInterface
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from .commands import ChatType, MessageType
+from .commands.types import ChatType, MessageType
 from .config import ConfigManager, Config
 
 def get_type(event: Update) -> ChatType:

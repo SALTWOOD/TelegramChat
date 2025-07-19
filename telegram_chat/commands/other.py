@@ -10,6 +10,7 @@ from .. import tools
 from ..const import Help
 from ..info import get_system_info
 from .types import ChatType, MessageType
+from ..config import ConfigManager
 
 async def help(server, event, context, command, type):
     await tools.send_to(event, context, Help.admin) if type == MessageType.ADMIN else await tools.send_to(event, context, Help.user)

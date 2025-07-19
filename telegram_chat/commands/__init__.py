@@ -4,7 +4,8 @@ from enum import Enum
 from .. import const, tools
 from ..command_builder import CommandBuilder
 from . import bind, game, other, user, whitelist
-from .types import ChatType, MessageType
+from .types import MessageType
+from ..config import ConfigManager
 
 # 实用函数
 def register_commands():

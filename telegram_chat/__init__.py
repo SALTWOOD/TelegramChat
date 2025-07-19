@@ -8,7 +8,8 @@ from telegram import MessageEntity, Update
 from telegram.ext import ContextTypes
 
 from . import tools
-from .commands import ChatType, MessageType, register_commands
+from .commands import register_commands
+from .commands.types import ChatType, MessageType
 from .command_builder import CommandBuilder
 from .config import ConfigManager
 from .const import VERSION, VERSION_STR

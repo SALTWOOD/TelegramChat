@@ -30,6 +30,7 @@ class Help():
 - /pardon 解除对某人的封禁（游戏内）
 - /bot-ban 不允许某人使用 Bot
 - /bot-pardon 不再禁止某人使用 Bot
+- /save 保存 Bot 配置文件
 """
 
     bind = """/bind <ID> 绑定当前 Telegram 账号到 Minecraft 账号

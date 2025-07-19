@@ -42,3 +42,13 @@ async def reload(server: PluginServerInterface, event: Update, context: ContextT
             f"收到，正在重载……"
         )
         server.reload_plugin("telegram_chat")
+        
+async def save(server: PluginServerInterface, event: Update, context: ContextTypes.DEFAULT_TYPE, command: List[str],
+                      event_type: MessageType):
+    if event_type == MessageType.ADMIN:
+        await tools.send_to(
+            event,
+            context,
+            f"收到，正在保存……"
+        )
+        ConfigManager.save_data(server)

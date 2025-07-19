@@ -68,4 +68,7 @@ def register_commands():
     command_tree.add_command(re.compile(r'/bot-ban (\d*)'), [int], user.bot_ban)
     command_tree.add_command(re.compile(r'/bot-pardon (\d*)'), [int], user.bot_pardon)
     
+    # /save
+    command_tree.add_command("/save", None, other.save)
+    
     return command_tree

@@ -51,9 +51,6 @@ class ConfigManager:
         保存数据
         """
         server.save_config_simple(
-            ConfigManager.config
-        )
-        server.save_config_simple(
             {
                 "data": ConfigManager.bindings,
             },

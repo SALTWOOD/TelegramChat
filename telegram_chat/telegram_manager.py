@@ -4,8 +4,6 @@ import threading
 import time
 from typing import Callable
 
-from .config import ConfigManager
-
 from telegram import Bot, Update
 from telegram.ext import Application, ApplicationBuilder, filters, MessageHandler
 
@@ -17,15 +15,18 @@ class TelegramBot:
     logger: logging.Logger
     stop_sign: threading.Event
     
+    _timeout: int = 60
+    
     @property
     def bot(self) -> Bot:
         return self.application.bot
 
-    def __init__(self, logger: logging.Logger, token: str, api: str = "https://api.telegram.org/bot"):
+    def __init__(self, logger: logging.Logger, token: str, api: str = "https://api.telegram.org/bot", timeout: int = 60):
         self.application = ApplicationBuilder().base_url(api).token(token).build()
         self.stop_sign = threading.Event()
         self.logger = logger
         self.loop = asyncio.new_event_loop()
+        self._timeout = timeout
 
     def register(self):
         """
@@ -47,7 +48,7 @@ class TelegramBot:
             while True:
                 if self.application.running:
                     break
-                if time.time() - start_time > ConfigManager.config.telegram["startup_timeout"]:
+                if time.time() - start_time > self._timeout:
                     raise Exception("Unable to start Telegram bot.")
                 time.sleep(0.5)
         self.logger.info("Telegram bot started.")

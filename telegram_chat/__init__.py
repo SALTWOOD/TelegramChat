@@ -45,7 +45,13 @@ async def on_load(server: PluginServerInterface, old):
     async def action(event: Update, context: ContextTypes.DEFAULT_TYPE):
         await on_message(server, event, context)
 
-    ConfigManager.bot = TelegramBot(server.logger, ConfigManager.config.telegram["token"]) if ConfigManager.config.telegram["api"] is None else TelegramBot(server.logger, ConfigManager.config.telegram["token"], ConfigManager.config.telegram["api"])
+    additional_args = {
+        "api": ConfigManager.config.telegram["api"],
+        "timeout": ConfigManager.config.telegram["startup_timeout"]
+    }
+    additional_args = {k: v for k, v in additional_args.items() if v is not None} # 过滤掉值为 None 的项
+
+    ConfigManager.bot = TelegramBot(server.logger, ConfigManager.config.telegram["token"], **additional_args)
     ConfigManager.bot.action = action
     ConfigManager.bot.register()
     ConfigManager.bot.start(True)

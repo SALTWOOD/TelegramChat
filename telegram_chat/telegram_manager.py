@@ -4,6 +4,8 @@ import threading
 import time
 from typing import Callable
 
+from .config import ConfigManager
+
 from telegram import Bot, Update
 from telegram.ext import Application, ApplicationBuilder, filters, MessageHandler
 
@@ -45,7 +47,7 @@ class TelegramBot:
             while True:
                 if self.application.running:
                     break
-                if time.time() - start_time > 5:
+                if time.time() - start_time > ConfigManager.config.telegram["startup_timeout"]:
                     raise Exception("Unable to start Telegram bot.")
                 time.sleep(0.5)
         self.logger.info("Telegram bot started.")

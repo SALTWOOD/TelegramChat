@@ -15,7 +15,8 @@ class Config(Serializable):
     
     telegram: Dict[str, Any] = {
         "token": None,
-        "api": None
+        "api": None,
+        "startup_timeout": 60,
     }
     
     whitelist: Dict[str, Any] = {
